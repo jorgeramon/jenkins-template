@@ -72,6 +72,9 @@
 <% if(build.result == hudson.model.Result.FAILURE) resultIcon = "https://www.shareicon.net/data/128x128/2016/07/19/798332_computer_512x512.png" %>
 
 <h1><span><img src="${resultIcon}" width="32" height="32" /></span> Build ${build.result}</h1>
+
+${ this.getProperties() }
+
 <table>
   <tr><th>Build URL:</th><td><a href="${rooturl}${build.url}">${rooturl}${build.url}</a></td></tr>
   <tr><th>Project:</th><td>${project.name}</td></tr>
@@ -85,42 +88,24 @@ if (changeSet != null) {
   hadChanges = false %>
   <h2>Changes</h2>
   <ul>
-<%   changeSet.each { cs ->
-    hadChanges = true
-    aUser = null //cs.author
-    issueRegex = /.*(#HAR1801-\d{3,4}).*/
-    matchIssue = cs.msg =~ issueRegex
-    modifyMessage = { msg ->
-      issueNumber = (cs.msg =~ issueRegex)[0][1]
-      url = "https://indigomx.atlassian.net/browse"
-      msg.replace(issueNumber, "<a href='${url}/${issueNumber.substring(1)}'>${issueNumber}</a>")
-    }
-    message = matchIssue.matches() ? modifyMessage(cs.msg) : cs.msg
+<%  changeSet.each { csl ->
+      csl.logs.each { cs ->
+        hadChanges = true
 %>
-      <li>Commit <b>${cs.revision[0..8]}</b> by <b><%= aUser != null ? aUser.displayName : it.author.displayName %>:</b> (${message})
+<li>Commit <b>${ cs.revision[0..8] }</b> by <b>${ cs.authorName }:</b> (${ cs.msg })
         <ul>
 <%        cs.affectedFiles.each { %>
           <li class="change-${it.editType.name}"><b>${it.editType.name}</b>: ${it.path}</li>
 <%        } %>
         </ul>
       </li>
-<%  }
+<%    }
+    }
 
   if (!hadChanges) { %>
       <li>No Changes</li>
 <%  } %>
   </ul>
-<% } %>
-
-<!-- ARTIFACTS -->
-<% artifacts = build.artifacts
-if (artifacts != null && artifacts.size() > 0) { %>
-  <h2>Build artifacts</h2>
-    <ul>
-<%    artifacts.each() { f -> %>
-      <li><a href="${rooturl}${build.url}artifact/${f}">${f}</a></li>
-<%    } %>
-    </ul>
 <% } %>
 </body>
 
