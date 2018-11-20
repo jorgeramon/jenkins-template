@@ -73,7 +73,7 @@
 
 <h1><span><img src="${resultIcon}" width="32" height="32" /></span> Build ${build.result}</h1>
 
-${ this.getProperties() }
+${ build.environment.BUILD_STATUS }
 
 <table>
   <tr><th>Build URL:</th><td><a href="${rooturl}${build.url}">${rooturl}${build.url}</a></td></tr>
