@@ -67,13 +67,14 @@
 </head>
 <body>
 
-<% def resultIcon = "https://image.flaticon.com/icons/png/128/497/497738.png"  %>
-<% if(build.result == hudson.model.Result.SUCCESS) resultIcon = "https://image.flaticon.com/icons/png/128/291/291201.png"  %>
-<% if(build.result == hudson.model.Result.FAILURE) resultIcon = "https://www.shareicon.net/data/128x128/2016/07/19/798332_computer_512x512.png" %>
+<% def resultIcon = "https://image.flaticon.com/icons/png/128/291/291201.png"  %>
+<% def result = "SUCCESS" %>
+<% if(build.result == hudson.model.Result.FAILURE) {
+  resultIcon = "https://www.shareicon.net/data/128x128/2016/07/19/798332_computer_512x512.png"
+  result = "FAILURE"
+} %>
 
-<h1><span><img src="${resultIcon}" width="32" height="32" /></span> Build ${build.result}</h1>
-
-${ build.environment.BUILD_STATUS }
+<h1><span><img src="${resultIcon}" width="32" height="32" /></span> Build ${result}</h1>
 
 <table>
   <tr><th>Build URL:</th><td><a href="${rooturl}${build.url}">${rooturl}${build.url}</a></td></tr>
