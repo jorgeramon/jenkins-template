@@ -2,11 +2,11 @@
 <head>
   <title>Build report</title>
   <style type="text/css">
-    body
-    {
-      margin: 0px;
-      padding: 15px;
-    }
+body
+{
+  margin: 0px;
+  padding: 15px;
+}
 
     body, td, th
     {
@@ -67,46 +67,72 @@
 </head>
 <body>
 
-<% def resultIcon = "https://image.flaticon.com/icons/png/128/291/291201.png"  %>
-<% def result = "SUCCESS" %>
-<% if(build.result == hudson.model.Result.FAILURE) {
-  resultIcon = "https://www.shareicon.net/data/128x128/2016/07/19/798332_computer_512x512.png"
-  result = "FAILURE"
-} %>
+  <% def resultIcon = "https://image.flaticon.com/icons/png/128/291/291201.png"  %>
+  <% def result = "SUCCESS" %>
+  <% if(build.result == hudson.model.Result.FAILURE) {
+         resultIcon = "https://www.shareicon.net/data/128x128/2016/07/19/798332_computer_512x512.png"
+         result = "FAILURE"
+         }
+         %>
 
-<h1><span><img src="${resultIcon}" width="32" height="32" /></span> Build ${result}</h1>
+         <h1><span><img src="${resultIcon}" width="32" height="32" /></span> Build ${result}</h1>
 
-<table>
-  <tr><th>Build URL:</th><td><a href="${rooturl}${build.url}">${rooturl}${build.url}</a></td></tr>
-  <tr><th>Project:</th><td>${project.name}</td></tr>
-  <tr><th>Date of build:</th><td>${it.timestampString}</td></tr>
-  <tr><th>Build duration:</th><td>${build.durationString}</td></tr>
-</table>
+         <table>
+           <tr><th>Build URL:</th><td><a href="${rooturl}${build.url}">${rooturl}${build.url}</a></td></tr>
+           <tr><th>Project:</th><td>${project.name}</td></tr>
+           <tr><th>Date of build:</th><td>${it.timestampString}</td></tr>
+           <tr><th>Build duration:</th><td>${build.durationString}</td></tr>
+         </table>
 
-<!-- CHANGE SET -->
-<% changeSet = build.changeSets
-if (changeSet != null) {
-  hadChanges = false %>
-  <h2>Changes</h2>
-  <ul>
-<%  changeSet.each { csl ->
-      csl.logs.each { cs ->
-        hadChanges = true
-%>
-<li>Commit <b>${ cs.revision[0..8] }</b> by <b>${ cs.authorName }:</b> (${ cs.msg })
-        <ul>
-<%        cs.affectedFiles.each { %>
-          <li class="change-${it.editType.name}"><b>${it.editType.name}</b>: ${it.path}</li>
-<%        } %>
-        </ul>
-      </li>
-<%    }
-    }
+         <!-- CHANGE SET -->
+         <% changeSet = build.changeSets
+                                         if (changeSet != null) {
+                                         hadChanges = false %>
+                                         <h2>Changes</h2>
+                                         <ul>
+                                           <%  changeSet.each { csl ->
+                                           csl.logs.each { cs ->
+                                           hadChanges = true
+                                           %>
+                                           <li>Commit <b>${ cs.revision[0..8] }</b> by <b>${ cs.authorName }:</b> (${ cs.msg })
+                                             <ul>
+                                               <%        cs.affectedFiles.each { %>
+                                               <li class="change-${it.editType.name}"><b>${it.editType.name}</b>: ${it.path}</li>
+                                               <%        } %>
+                                             </ul>
+                                           </li>
+                                           <%    }
+                                                   }
 
-  if (!hadChanges) { %>
-      <li>No Changes</li>
-<%  } %>
-  </ul>
-<% } %>
+                                                   if (!hadChanges) { %>
+                                                   <li>No Changes</li>
+                                                   <%  } %>
+                                         </ul>
+                                         <% } %>
+
+                                         <!-- BUILD FAILURE REASONS -->
+                                         <% if (build.result == hudson.model.Result.FAILURE) {
+                                                   log = build.getLog(100).join("\n")
+                                                   warningsResultActions = build.actions.findAll { it.class.simpleName == "WarningsResultAction" }
+
+                                                   if (warningsResultActions.size() > 0) { %>
+                                                   <h2>Build errors</h2>
+                                                   <ul>
+                                                     <% warningsResultActions.each {
+                                                   newWarnings = it.result.newWarnings
+                                                   if (newWarnings.size() > 0) {
+                                                   newWarnings.each {
+                                                   if (it.priority.toString() == "HIGH") { %>
+                                                   <li class="error">In <b>${it.fileName}</b> at line ${it.primaryLineNumber}: ${it.message}</li>
+                                                   <% }} %>
+                                                   <% }} %>
+                                                   </ul>
+                                                   <% } %>
+
+                                                   <h2>Console output</h2>
+                                                   <pre class="console">${log}</pre>
+
+                                                   <% } %>
+
 </body>
 
